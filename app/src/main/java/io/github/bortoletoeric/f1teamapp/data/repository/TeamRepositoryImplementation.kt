@@ -6,8 +6,6 @@ import io.github.bortoletoeric.f1teamapp.data.mapper.toEntity
 import io.github.bortoletoeric.f1teamapp.data.remote.F1ApiService
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
 import io.github.bortoletoeric.f1teamapp.domain.model.Driver
-
-
 import io.github.bortoletoeric.f1teamapp.domain.repository.TeamRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,7 +15,6 @@ class TeamRepositoryImpl(
     private val teamDao: TeamDao
 ) : TeamRepository {
 
-    // Regra 1: SSOT. Dados lidos unicamente do banco.
     override fun observeTeams(): Flow<List<Team>> {
         return teamDao.observeTeams().map { entities ->
             entities.map { it.toDomain() }
@@ -36,18 +33,22 @@ class TeamRepositoryImpl(
 
     override suspend fun syncData() {
         try {
-            val remoteTeams = apiService.getCurrentTeams()
+            val teamResponse = apiService.getTeams()
+            val remoteTeams = teamResponse.teams
 
             val teamEntities = remoteTeams.map { it.toEntity() }
+            teamDao.upsertTeamsPreservingFavorites(teamEntities)
+
             val driverEntities = remoteTeams.flatMap { team ->
-                team.drivers.map { driver -> driver.toEntity(teamId = team.id) }
+                val driversResponse = apiService.getDriversByTeam(team.teamId)
+                driversResponse.drivers.map { driver ->
+                    driver.toEntity(teamId = team.teamId)
+                }
             }
 
-            // Atualiza times preservando estado isFavorite, depois insere os pilotos
-            teamDao.upsertTeamsPreservingFavorites(teamEntities)
             teamDao.insertDrivers(driverEntities)
+
         } catch (e: Exception) {
-            // Repassa a exceção ou loga para tratamento na UI/ViewModel
             throw e
         }
     }

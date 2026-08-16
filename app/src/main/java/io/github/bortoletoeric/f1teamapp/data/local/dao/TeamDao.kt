@@ -11,14 +11,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TeamDao {
-    // Regra 2: Ordenação por Descrição obrigatória diretamente na query
-    @Query("SELECT * FROM teams ORDER BY description ASC")
+    @Query("SELECT * FROM teams ORDER BY name ASC")
     fun observeTeams(): Flow<List<TeamEntity>>
 
     @Query("SELECT * FROM teams WHERE id = :teamId")
     fun observeTeam(teamId: String): Flow<TeamEntity>
 
-    @Query("SELECT * FROM drivers WHERE teamId = :teamId")
+    @Query("SELECT * FROM drivers WHERE teamId = :teamId ORDER BY name ASC")
     fun observeDriversByTeam(teamId: String): Flow<List<DriverEntity>>
 
     @Query("SELECT isFavorite FROM teams WHERE id = :teamId")
@@ -33,7 +32,6 @@ interface TeamDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDrivers(drivers: List<DriverEntity>)
 
-    // Regra 3: Preservação do status de favorito local durante o Upsert
     @Transaction
     suspend fun upsertTeamsPreservingFavorites(teams: List<TeamEntity>) {
         teams.forEach { remoteTeam ->

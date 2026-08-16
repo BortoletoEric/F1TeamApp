@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import io.github.bortoletoeric.f1teamapp.domain.model.Driver
+import io.github.bortoletoeric.f1teamapp.domain.model.Team
 
 @Composable
 fun DriversRoute(
@@ -56,9 +60,7 @@ fun DriversScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         uiState.team?.let { team ->
             TeamHeader(
-                name = team.name,
-                description = team.description,
-                logoUrl = team.logoUrl,
+                team = team,
                 onBack = onNavigateBack
             )
         }
@@ -77,9 +79,7 @@ fun DriversScreen(
 
 @Composable
 fun TeamHeader(
-    name: String,
-    description: String,
-    logoUrl: String?,
+    team: Team,
     onBack: () -> Unit
 ) {
     Column(
@@ -94,16 +94,21 @@ fun TeamHeader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        AsyncImage(
-            model = logoUrl,
-            contentDescription = "Logo $name",
-            modifier = Modifier.size(100.dp)
+        Icon(
+            imageVector = Icons.Default.Groups,
+            contentDescription = "Team Icon",
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = name, style = MaterialTheme.typography.headlineMedium)
-        Text(text = description, style = MaterialTheme.typography.bodyLarge)
+        Text(text = team.name, style = MaterialTheme.typography.headlineMedium)
+        Text(text = team.nationality, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = "Primeira Aparição: ${team.firstAppeareance}",
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 

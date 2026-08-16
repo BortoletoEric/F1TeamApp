@@ -7,7 +7,10 @@ import androidx.room.PrimaryKey
 data class TeamEntity(
     @PrimaryKey val id: String,
     val name: String,
-    val description: String,
-    val logoUrl: String?,
-    val isFavorite: Boolean = false
+    val nationality: String,
+    val firstAppeareance: Int,
+    val constructorsChampionships: Int,
+    val driversChampionships: Int,
+    val wikipediaUrl: String,
+    val isFavorite: Boolean
 )

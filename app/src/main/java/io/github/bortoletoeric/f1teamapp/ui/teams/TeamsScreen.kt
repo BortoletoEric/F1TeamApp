@@ -17,21 +17,27 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
+import kotlinx.coroutines.launch
 
 @Composable
 fun TeamsRoute(
@@ -53,41 +59,62 @@ fun TeamsScreen(
     onTeamClick: (String) -> Unit,
     onToggleFavorite: (String, Boolean) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (uiState.isLoading && uiState.teams.isEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (uiState.errorMessage != null && uiState.teams.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (uiState.isLoading && uiState.teams.isEmpty()) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (uiState.errorMessage != null && uiState.teams.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = uiState.errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            } else if (uiState.teams.isEmpty()) {
                 Text(
-                    text = uiState.errorMessage,
-                    color = MaterialTheme.colorScheme.error,
+                    text = "Nenhum time encontrado.",
+                    modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.bodyLarge
                 )
-            }
-        } else if (uiState.teams.isEmpty()) {
-            Text(
-                text = "Nenhum time encontrado.",
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(uiState.teams, key = { it.id }) { team ->
-                    TeamItem(
-                        team = team,
-                        onClick = { onTeamClick(team.id) },
-                        onToggleFavorite = { onToggleFavorite(team.id, team.isFavorite) }
-                    )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.teams, key = { it.id }) { team ->
+                        TeamItem(
+                            team = team,
+                            onClick = { onTeamClick(team.id) },
+                            onToggleFavorite = {
+                                onToggleFavorite(team.id, team.isFavorite)
+                                val message = if (team.isFavorite) {
+                                    "Removido dos favoritos: ${team.name}"
+                                } else {
+                                    "Adicionado aos favoritos: ${team.name}"
+                                }
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(message)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -111,17 +138,18 @@ fun TeamItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = team.logoUrl,
-                contentDescription = "Logo ${team.name}",
-                modifier = Modifier.size(48.dp)
+            Icon(
+                imageVector = Icons.Default.Groups,
+                contentDescription = "Team Icon",
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = team.name, style = MaterialTheme.typography.titleMedium)
-                Text(text = team.description, style = MaterialTheme.typography.bodyMedium)
+                Text(text = team.nationality, style = MaterialTheme.typography.bodyMedium)
             }
 
             IconButton(onClick = onToggleFavorite) {
@@ -134,34 +162,35 @@ fun TeamItem(
     }
 }
 
-// Preview do estado de Sucesso com dados
 @Preview(showBackground = true, name = "Teams List - Success")
 @Composable
 fun TeamsScreenSuccessPreview() {
-    MaterialTheme { // Substitua pelo Theme do seu app se tiver um específico
+    MaterialTheme {
         TeamsScreen(
             uiState = TeamsUiState(
                 isLoading = false,
                 teams = listOf(
-                    Team(id = "1", name = "Red Bull Racing", description = "Austrian team", logoUrl = "", isFavorite = true),
-                    Team(id = "2", name = "Ferrari", description = "Italian team", logoUrl = "", isFavorite = false)
+                    Team(
+                        id = "1",
+                        name = "Red Bull Racing",
+                        nationality = "Austria",
+                        firstAppeareance = 2005,
+                        constructorsChampionships = 6,
+                        driversChampionships = 7,
+                        wikipediaUrl = "",
+                        isFavorite = true
+                    ),
+                    Team(
+                        id = "2",
+                        name = "Ferrari",
+                        nationality = "Italy",
+                        firstAppeareance = 1950,
+                        constructorsChampionships = 16,
+                        driversChampionships = 15,
+                        wikipediaUrl = "",
+                        isFavorite = false
+                    )
                 )
-            ),
-            onTeamClick = {},
-            onToggleFavorite = { _, _ -> }
-        )
-    }
-}
-
-// Preview do estado de Carregamento
-@Preview(showBackground = true, name = "Teams List - Loading")
-@Composable
-fun TeamsScreenLoadingPreview() {
-    MaterialTheme {
-        TeamsScreen(
-            uiState = TeamsUiState(
-                isLoading = true,
-                teams = emptyList()
             ),
             onTeamClick = {},
             onToggleFavorite = { _, _ -> }

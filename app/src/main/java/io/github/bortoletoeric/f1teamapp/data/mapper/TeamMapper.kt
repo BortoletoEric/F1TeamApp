@@ -10,9 +10,23 @@ import io.github.bortoletoeric.f1teamapp.domain.model.Team
 fun TeamEntity.toDomain() = Team(
     id = id,
     name = name,
-    description = description,
-    logoUrl = logoUrl,
+    nationality = nationality,
+    firstAppeareance = firstAppeareance,
+    constructorsChampionships = constructorsChampionships,
+    driversChampionships = driversChampionships,
+    wikipediaUrl = wikipediaUrl,
     isFavorite = isFavorite
+)
+
+fun TeamDto.toEntity() = TeamEntity(
+    id = teamId,
+    name = teamName,
+    nationality = teamNationality,
+    firstAppeareance = firstAppeareance,
+    constructorsChampionships = constructorsChampionships ?: 0,
+    driversChampionships = driversChampionships ?: 0,
+    wikipediaUrl = url,
+    isFavorite = false
 )
 
 fun DriverEntity.toDomain() = Driver(
@@ -20,14 +34,6 @@ fun DriverEntity.toDomain() = Driver(
     teamId = teamId,
     name = name,
     photoUrl = photoUrl
-)
-
-fun TeamDto.toEntity() = TeamEntity(
-    id = id,
-    name = name,
-    description = description,
-    logoUrl = logoUrl,
-    isFavorite = false // Default inicial, tratado no DAO
 )
 
 fun DriverDto.toEntity(teamId: String) = DriverEntity(

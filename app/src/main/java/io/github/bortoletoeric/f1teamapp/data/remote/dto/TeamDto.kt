@@ -20,7 +20,7 @@ data class TeamDto(
     val teamName: String,
     val teamNationality: String,
     val firstAppeareance: Int,
-    val constructorsChampionships: Int?, // Obrigatório ser anulável
-    val driversChampionships: Int?,      // Obrigatório ser anulável
+    val constructorsChampionships: Int?,
+    val driversChampionships: Int?,
     val url: String
 )

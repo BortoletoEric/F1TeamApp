@@ -46,8 +46,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.espresso.core)
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.material3)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -64,7 +65,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.retrofit)
-    implementation(libs.converter.gson) // Ou converter-kotlinx-serialization se preferir
+    implementation(libs.converter.gson)
+    implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
     // Coil (Carregamento de imagens assíncrono para Compose)
     implementation(libs.coil.compose)

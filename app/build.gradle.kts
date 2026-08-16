@@ -57,6 +57,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    ksp(libs.androidx.room.compiler)
+
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx) // Fornece suporte nativo a Coroutines e Flow
 
@@ -66,7 +68,7 @@ dependencies {
 
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
-    implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+    implementation(libs.koin.androidx.compose)
 
     // Coil (Carregamento de imagens assíncrono para Compose)
     implementation(libs.coil.compose)

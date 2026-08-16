@@ -36,7 +36,13 @@ class TeamsViewModel(
                     _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
                 }
                 .collect { teams ->
-                    _uiState.update { it.copy(teams = teams, isLoading = false) }
+                    _uiState.update {
+                        it.copy(
+                            teams = teams,
+                            // Se temos dados, paramos o loading. Se não temos, esperamos o sync.
+                            isLoading = it.isLoading && teams.isEmpty()
+                        )
+                    }
                 }
         }
     }
@@ -47,6 +53,8 @@ class TeamsViewModel(
                 repository.syncData()
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = "Erro de sincronização: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }

@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -52,24 +53,43 @@ fun TeamsScreen(
     onTeamClick: (String) -> Unit,
     onToggleFavorite: (String, Boolean) -> Unit
 ) {
-    if (uiState.isLoading && uiState.teams.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(uiState.teams, key = { it.id }) { team ->
-            TeamItem(
-                team = team,
-                onClick = { onTeamClick(team.id) },
-                onToggleFavorite = { onToggleFavorite(team.id, team.isFavorite) }
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (uiState.isLoading && uiState.teams.isEmpty()) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (uiState.errorMessage != null && uiState.teams.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = uiState.errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        } else if (uiState.teams.isEmpty()) {
+            Text(
+                text = "Nenhum time encontrado.",
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.bodyLarge
             )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(uiState.teams, key = { it.id }) { team ->
+                    TeamItem(
+                        team = team,
+                        onClick = { onTeamClick(team.id) },
+                        onToggleFavorite = { onToggleFavorite(team.id, team.isFavorite) }
+                    )
+                }
+            }
         }
     }
 }
@@ -111,5 +131,40 @@ fun TeamItem(
                 )
             }
         }
+    }
+}
+
+// Preview do estado de Sucesso com dados
+@Preview(showBackground = true, name = "Teams List - Success")
+@Composable
+fun TeamsScreenSuccessPreview() {
+    MaterialTheme { // Substitua pelo Theme do seu app se tiver um específico
+        TeamsScreen(
+            uiState = TeamsUiState(
+                isLoading = false,
+                teams = listOf(
+                    Team(id = "1", name = "Red Bull Racing", description = "Austrian team", logoUrl = "", isFavorite = true),
+                    Team(id = "2", name = "Ferrari", description = "Italian team", logoUrl = "", isFavorite = false)
+                )
+            ),
+            onTeamClick = {},
+            onToggleFavorite = { _, _ -> }
+        )
+    }
+}
+
+// Preview do estado de Carregamento
+@Preview(showBackground = true, name = "Teams List - Loading")
+@Composable
+fun TeamsScreenLoadingPreview() {
+    MaterialTheme {
+        TeamsScreen(
+            uiState = TeamsUiState(
+                isLoading = true,
+                teams = emptyList()
+            ),
+            onTeamClick = {},
+            onToggleFavorite = { _, _ -> }
+        )
     }
 }

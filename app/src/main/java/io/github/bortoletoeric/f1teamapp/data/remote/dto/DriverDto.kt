@@ -1,23 +1,14 @@
 package io.github.bortoletoeric.f1teamapp.data.remote.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DriverResponse(
-    val api: String,
-    val url: String,
-    val limit: Int,
-    val offset: Int,
-    val total: Int,
-    val season: Int,
-    val championshipId: String,
-    val drivers: List<DriverDto>
-)
-
-@Serializable
 data class DriverDto(
-    val id: String,
-    val teamId: String,
-    val name: String,
-    val photoUrl: String?
+    @SerialName("driverId") val driverId: String,
+    @SerialName("name") val name: String,
+    @SerialName("surname") val surname: String,
+    @SerialName("nationality") val nationality: String,
+    @SerialName("points") val points: Int,
+    @SerialName("position") val position: Int
 )

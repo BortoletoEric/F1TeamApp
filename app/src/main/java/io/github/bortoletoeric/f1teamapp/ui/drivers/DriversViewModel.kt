@@ -20,31 +20,26 @@ data class DriversUiState(
     val errorMessage: String? = null
 )
 
-class DriversViewModel(
-    savedStateHandle: SavedStateHandle,
-    private val repository: TeamRepository
-) : ViewModel() {
+class DriversViewModel(private val teamRepository: TeamRepository) : ViewModel() {
 
-    // Assumindo que o ID do time é passado via Navigation
-    private val teamId: String = checkNotNull(savedStateHandle["teamId"])
-
-    private val _uiState = MutableStateFlow(DriversUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(DriversUiState())
     val uiState: StateFlow<DriversUiState> = _uiState.asStateFlow()
 
-    init {
-        loadTeamAndDrivers()
-    }
-
-    private fun loadTeamAndDrivers() {
+    fun loadDrivers(teamId: String) {
         viewModelScope.launch {
-            // Combina os dois Flows do Room para emitir um estado unificado
-            combine(
-                repository.observeTeam(teamId),
-                repository.observeDriversByTeam(teamId)
-            ) { team, drivers ->
-                DriversUiState(team = team, drivers = drivers, isLoading = false)
-            }.collect { state ->
-                _uiState.update { state }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                // Requer um metodo no TeamRepository para buscar um único time pelo ID
+                val currentTeam = teamRepository.getTeamById(teamId)
+
+                val drivers = teamRepository.getTeamDrivers(teamId)
+                val sortedDrivers = drivers.sortedByDescending { it.points }
+
+                _uiState.update {
+                    it.copy(team = currentTeam, drivers = sortedDrivers, isLoading = false)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
             }
         }
     }

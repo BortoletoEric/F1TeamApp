@@ -7,7 +7,6 @@ import io.github.bortoletoeric.f1teamapp.domain.repository.TeamRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -17,51 +16,33 @@ data class TeamsUiState(
     val errorMessage: String? = null
 )
 
-class TeamsViewModel(
-    private val repository: TeamRepository
-) : ViewModel() {
+class TeamsViewModel(private val teamRepository: TeamRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TeamsUiState(isLoading = true))
     val uiState: StateFlow<TeamsUiState> = _uiState.asStateFlow()
 
     init {
-        observeTeams()
-        syncTeams()
-    }
-
-    private fun observeTeams() {
+        // SSOT: Observa as mudanças do banco local
         viewModelScope.launch {
-            repository.observeTeams()
-                .catch { e ->
-                    _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
-                }
-                .collect { teams ->
-                    _uiState.update {
-                        it.copy(
-                            teams = teams,
-                            // Se temos dados, paramos o loading. Se não temos, esperamos o sync.
-                            isLoading = it.isLoading && teams.isEmpty()
-                        )
-                    }
-                }
+            teamRepository.getTeams().collect { teams ->
+                _uiState.update { it.copy(teams = teams, isLoading = false) }
+            }
         }
-    }
 
-    private fun syncTeams() {
+        // Atualiza o banco com os dados da API
         viewModelScope.launch {
             try {
-                repository.syncData()
+                teamRepository.syncTeams()
             } catch (e: Exception) {
-                _uiState.update { it.copy(errorMessage = "Erro de sincronização: ${e.message}") }
-            } finally {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
             }
         }
     }
 
-    fun onToggleFavorite(teamId: String, currentStatus: Boolean) {
+    fun toggleFavorite(teamId: String, isFavorite: Boolean) {
         viewModelScope.launch {
-            repository.toggleFavorite(teamId, !currentStatus)
+            // Envia o novo estado de favorito para o repositório
+            teamRepository.toggleFavorite(teamId, !isFavorite)
         }
     }
 }

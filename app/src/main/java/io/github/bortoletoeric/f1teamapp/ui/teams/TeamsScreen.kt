@@ -49,7 +49,7 @@ fun TeamsRoute(
     TeamsScreen(
         uiState = uiState,
         onTeamClick = onNavigateToTeamDetails,
-        onToggleFavorite = viewModel::onToggleFavorite
+        onToggleFavorite = viewModel::toggleFavorite
     )
 }
 
@@ -138,24 +138,27 @@ fun TeamItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Groups,
-                contentDescription = "Team Icon",
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.primary
+            // Exibindo a posição do time no campeonato
+            Text(
+                text = "${team.position}º",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(end = 16.dp)
             )
-
-            Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = team.name, style = MaterialTheme.typography.titleMedium)
-                Text(text = team.nationality, style = MaterialTheme.typography.bodyMedium)
+                // Exibindo os novos campos de pontuação e vitórias
+                Text(
+                    text = "${team.points} pts | ${team.wins} vitórias",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
 
             IconButton(onClick = onToggleFavorite) {
                 Icon(
                     imageVector = if (team.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favoritar"
+                    contentDescription = "Favoritar",
+                    tint = if (team.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -171,23 +174,19 @@ fun TeamsScreenSuccessPreview() {
                 isLoading = false,
                 teams = listOf(
                     Team(
-                        id = "1",
+                        id = "red_bull",
                         name = "Red Bull Racing",
-                        nationality = "Austria",
-                        firstAppeareance = 2005,
-                        constructorsChampionships = 6,
-                        driversChampionships = 7,
-                        wikipediaUrl = "",
+                        position = 1,
+                        points = 860.0f,
+                        wins = 21,
                         isFavorite = true
                     ),
                     Team(
-                        id = "2",
-                        name = "Ferrari",
-                        nationality = "Italy",
-                        firstAppeareance = 1950,
-                        constructorsChampionships = 16,
-                        driversChampionships = 15,
-                        wikipediaUrl = "",
+                        id = "mercedes",
+                        name = "Mercedes",
+                        position = 2,
+                        points = 409.0f,
+                        wins = 0,
                         isFavorite = false
                     )
                 )

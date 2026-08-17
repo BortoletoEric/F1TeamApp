@@ -94,6 +94,7 @@ fun TeamHeader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Se estiver usando a URL da API para os times, pode trocar o Icon pelo AsyncImage no futuro
         Icon(
             imageVector = Icons.Default.Groups,
             contentDescription = "Team Icon",
@@ -104,9 +105,9 @@ fun TeamHeader(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(text = team.name, style = MaterialTheme.typography.headlineMedium)
-        Text(text = team.nationality, style = MaterialTheme.typography.bodyLarge)
+        Text(text = "Posição: ${team.position}º lugar", style = MaterialTheme.typography.bodyLarge)
         Text(
-            text = "Primeira Aparição: ${team.firstAppeareance}",
+            text = "${team.points} Pontos | ${team.wins} Vitórias",
             style = MaterialTheme.typography.bodySmall
         )
     }
@@ -129,7 +130,11 @@ fun DriverItem(driver: Driver) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Text(text = driver.name, style = MaterialTheme.typography.titleMedium)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = driver.name, style = MaterialTheme.typography.titleMedium)
+                // Exibe a pontuação que justifica a ordenação decrescente da lista
+                Text(text = "${driver.points} pts", style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

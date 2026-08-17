@@ -28,16 +28,16 @@ val appModule = module {
     single {
         val json = Json { ignoreUnknownKeys = true }
         Retrofit.Builder()
-            .baseUrl("https://f1api.dev/")
+            .baseUrl("https://f1api.dev/pt/")
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(F1ApiService::class.java)
     }
 
-    // 3. Instância do Repositório (Injenta API e DAO automaticamente)
-    single<TeamRepository> { TeamRepositoryImpl(apiService = get(), teamDao = get()) }
+    // 3. Instância do Repositório (Injeta API e DAO automaticamente)
+    single<TeamRepository> { TeamRepositoryImpl(apiService = get(), dao = get()) }
 
     // 4. Instâncias das ViewModels
-    viewModel { TeamsViewModel(repository = get()) }
-    viewModel { params -> DriversViewModel(savedStateHandle = params.get(), repository = get()) }
+    viewModel { TeamsViewModel(teamRepository = get()) }
+    viewModel { DriversViewModel(teamRepository = get()) }
 }

@@ -6,5 +6,6 @@ data class Team(
     val position: Int,
     val points: Float,
     val wins: Int,
+    val season: Int,
     val isFavorite: Boolean = false
 )

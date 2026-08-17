@@ -8,6 +8,11 @@ fun DriverEntity.toDomain() = Driver(
     id = id,
     teamId = teamId,
     name = name,
+    surname = surname,
+    number = number,
+    nationality = nationality,
+    birthday = birthday,
+    position = position,
     photoUrl = photoUrl,
     points = points
 )
@@ -15,8 +20,13 @@ fun DriverEntity.toDomain() = Driver(
 fun DriverDto.toDomain(teamId: String) = Driver(
     id = driverId,
     teamId = teamId,
-    name = "$name $surname",
-    photoUrl = null, // URL de fotos não disponível no DTO básico de standings
+    name = name,
+    surname = surname,
+    number = number,
+    nationality = nationality,
+    birthday = birthday,
+    position = position,
+    photoUrl = null,
     points = points.toFloat()
 )
 
@@ -24,6 +34,11 @@ fun Driver.toEntity() = DriverEntity(
     id = id,
     teamId = teamId,
     name = name,
+    surname = surname,
+    number = number,
+    nationality = nationality,
+    birthday = birthday,
+    position = position,
     photoUrl = photoUrl,
     points = points
 )
@@ -31,7 +46,12 @@ fun Driver.toEntity() = DriverEntity(
 fun DriverDto.toEntity(teamId: String) = DriverEntity(
     id = driverId,
     teamId = teamId,
-    name = "$name $surname",
+    name = name,
+    surname = surname,
+    number = number,
+    nationality = nationality,
+    birthday = birthday,
+    position = position,
     photoUrl = null,
     points = points.toFloat()
 )

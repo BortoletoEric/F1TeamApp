@@ -10,5 +10,7 @@ data class DriverDto(
     @SerialName("surname") val surname: String,
     @SerialName("nationality") val nationality: String,
     @SerialName("points") val points: Int,
-    @SerialName("position") val position: Int
+    @SerialName("position") val position: Int,
+    @SerialName("number") val number: Int? = null,
+    @SerialName("birthday") val birthday: String
 )

@@ -32,7 +32,8 @@ class TeamRepositoryImpl(
     override suspend fun syncTeams() {
         try {
             val response = apiService.getConstructorsStandings()
-            val entities = response.constructorsChampionship.map { it.toEntity() }
+            val season = response.season
+            val entities = response.constructorsChampionship.map { it.toEntity(season) }
             teamDao.upsertTeamsPreservingFavorites(entities)
         } catch (e: HttpException) {
             Log.e("TeamRepository", "Erro ao sincronizar times: Status ${e.code()} - ${e.message()}")

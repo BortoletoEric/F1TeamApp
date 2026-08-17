@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ConstructorsChampionshipResponseDto(
+    @SerialName("season")
+    val season: Int,
     @SerialName("constructors_championship")
     val constructorsChampionship: List<ConstructorStandingDto>
 )

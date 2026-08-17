@@ -17,52 +17,44 @@ import io.github.bortoletoeric.f1teamapp.ui.drivers.DriversViewModel
 import io.github.bortoletoeric.f1teamapp.ui.teams.TeamsRoute
 import io.github.bortoletoeric.f1teamapp.ui.teams.TeamsViewModel
 import io.github.bortoletoeric.f1teamapp.ui.theme.F1TeamAppTheme
-import io.github.bortoletoeric.f1teamapp.di.appModule
-import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.KoinApplication
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            KoinApplication(application = {
-                androidContext(this@MainActivity.applicationContext)
-                modules(appModule)
-            }) {
-                F1TeamAppTheme {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        val navController = rememberNavController()
+            F1TeamAppTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
 
-                        NavHost(navController = navController, startDestination = "teams") {
+                    NavHost(navController = navController, startDestination = "teams") {
 
-                            composable("teams") {
-                                // Koin injeta o repository automaticamente
-                                val viewModel: TeamsViewModel = koinViewModel()
+                        composable("teams") {
+                            // Koin injeta o repository automaticamente
+                            val viewModel: TeamsViewModel = koinViewModel()
 
-                                TeamsRoute(
-                                    viewModel = viewModel,
-                                    onNavigateToTeamDetails = { teamId ->
-                                        navController.navigate("drivers/$teamId")
-                                    }
-                                )
-                            }
+                            TeamsRoute(
+                                viewModel = viewModel,
+                                onNavigateToTeamDetails = { teamId ->
+                                    navController.navigate("drivers/$teamId")
+                                }
+                            )
+                        }
 
-                            composable(
-                                route = "drivers/{teamId}",
-                                arguments = listOf(navArgument("teamId") { type = NavType.StringType })
-                            ) {
-                                // Koin passa automaticamente o bundle/argumentos para o SavedStateHandle
-                                val viewModel: DriversViewModel = koinViewModel()
+                        composable(
+                            route = "drivers/{teamId}",
+                            arguments = listOf(navArgument("teamId") { type = NavType.StringType })
+                        ) {
+                            // Koin passa automaticamente o bundle/argumentos para o SavedStateHandle
+                            val viewModel: DriversViewModel = koinViewModel()
 
-                                DriversRoute(
-                                    viewModel = viewModel,
-                                    onNavigateBack = { navController.popBackStack() }
-                                )
-                            }
+                            DriversRoute(
+                                viewModel = viewModel,
+                                onNavigateBack = { navController.popBackStack() }
+                            )
                         }
                     }
                 }

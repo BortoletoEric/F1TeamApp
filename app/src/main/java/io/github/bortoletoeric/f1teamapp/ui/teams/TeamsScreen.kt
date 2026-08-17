@@ -147,9 +147,8 @@ fun TeamItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = team.name, style = MaterialTheme.typography.titleMedium)
-                // Exibindo os novos campos de pontuação e vitórias
                 Text(
-                    text = "${team.points} pts | ${team.wins} vitórias",
+                    text = "Temporada ${team.season} | ${team.points} pts | ${team.wins} vitórias",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -179,6 +178,7 @@ fun TeamsScreenSuccessPreview() {
                         position = 1,
                         points = 860.0f,
                         wins = 21,
+                        season = 2024,
                         isFavorite = true
                     ),
                     Team(
@@ -187,6 +187,7 @@ fun TeamsScreenSuccessPreview() {
                         position = 2,
                         points = 409.0f,
                         wins = 0,
+                        season = 2024,
                         isFavorite = false
                     )
                 )

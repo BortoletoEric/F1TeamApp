@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,46 +51,53 @@ fun DriversScreen(
     uiState: DriversUiState,
     onNavigateBack: () -> Unit
 ) {
-    if (uiState.isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    if (uiState.errorMessage != null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error)
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onNavigateBack) {
-                    Text("Voltar")
+    Scaffold { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (uiState.errorMessage != null) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = onNavigateBack) {
+                        Text("Voltar")
+                    }
                 }
-            }
-        }
-        return
-    }
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    uiState.team?.let { team ->
+                        TeamHeader(
+                            team = team,
+                            onBack = onNavigateBack
+                        )
+                    }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        uiState.team?.let { team ->
-            TeamHeader(
-                team = team,
-                onBack = onNavigateBack
-            )
-        }
-
-        if (uiState.drivers.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Nenhum piloto encontrado para esta equipe.")
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(uiState.drivers, key = { it.id }) { driver ->
-                    DriverItem(driver = driver)
+                    if (uiState.drivers.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "Nenhum piloto encontrado para esta equipe.")
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(uiState.drivers, key = { it.id }) { driver ->
+                                DriverItem(driver = driver)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -141,18 +149,35 @@ fun DriverItem(driver: Driver) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Posição do piloto
+            Text(
+                text = "${driver.position}º",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(end = 12.dp)
+            )
+
             AsyncImage(
                 model = driver.photoUrl,
-                contentDescription = "Foto ${driver.name}",
+                contentDescription = "Foto ${driver.fullName}",
                 modifier = Modifier.size(64.dp)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = driver.name, style = MaterialTheme.typography.titleMedium)
-                // Exibe a pontuação que justifica a ordenação decrescente da lista
-                Text(text = "${driver.points} pts", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "${driver.fullName} #${driver.number ?: ""}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "${driver.nationality} | ${driver.age} anos",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "${driver.points} pts",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

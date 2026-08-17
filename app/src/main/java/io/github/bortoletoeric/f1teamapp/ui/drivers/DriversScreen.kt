@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import io.github.bortoletoeric.f1teamapp.domain.model.Driver
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
+import io.github.bortoletoeric.f1teamapp.ui.components.ErrorState
 
 @Composable
 fun DriversRoute(
@@ -42,14 +43,16 @@ fun DriversRoute(
 
     DriversScreen(
         uiState = uiState,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onRetry = viewModel::retry
     )
 }
 
 @Composable
 fun DriversScreen(
     uiState: DriversUiState,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onRetry: () -> Unit
 ) {
     Scaffold { paddingValues ->
         Box(
@@ -59,18 +62,11 @@ fun DriversScreen(
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (uiState.errorMessage != null) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = onNavigateBack) {
-                        Text("Voltar")
-                    }
-                }
+            } else if (uiState.error != null) {
+                ErrorState(
+                    error = uiState.error,
+                    onRetry = onRetry
+                )
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     uiState.team?.let { team ->

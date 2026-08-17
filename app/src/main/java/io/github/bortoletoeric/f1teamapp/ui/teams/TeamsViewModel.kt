@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
 import io.github.bortoletoeric.f1teamapp.domain.repository.TeamRepository
+import io.github.bortoletoeric.f1teamapp.util.NetworkError
+import io.github.bortoletoeric.f1teamapp.util.toNetworkError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +15,7 @@ import kotlinx.coroutines.launch
 data class TeamsUiState(
     val isLoading: Boolean = false,
     val teams: List<Team> = emptyList(),
-    val errorMessage: String? = null
+    val error: NetworkError? = null
 )
 
 class TeamsViewModel(private val teamRepository: TeamRepository) : ViewModel() {
@@ -22,19 +24,27 @@ class TeamsViewModel(private val teamRepository: TeamRepository) : ViewModel() {
     val uiState: StateFlow<TeamsUiState> = _uiState.asStateFlow()
 
     init {
+        observeTeams()
+        refresh()
+    }
+
+    private fun observeTeams() {
         // SSOT: Observa as mudanças do banco local
         viewModelScope.launch {
             teamRepository.getTeams().collect { teams ->
                 _uiState.update { it.copy(teams = teams, isLoading = false) }
             }
         }
+    }
 
+    fun refresh() {
         // Atualiza o banco com os dados da API
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 teamRepository.syncTeams()
             } catch (e: Exception) {
-                _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
+                _uiState.update { it.copy(error = e.toNetworkError(), isLoading = false) }
             }
         }
     }

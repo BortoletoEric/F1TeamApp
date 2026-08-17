@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import io.github.bortoletoeric.f1teamapp.domain.model.Driver
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
 import io.github.bortoletoeric.f1teamapp.domain.repository.TeamRepository
+import io.github.bortoletoeric.f1teamapp.util.NetworkError
+import io.github.bortoletoeric.f1teamapp.util.toNetworkError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +19,7 @@ data class DriversUiState(
     val isLoading: Boolean = false,
     val team: Team? = null,
     val drivers: List<Driver> = emptyList(),
-    val errorMessage: String? = null
+    val error: NetworkError? = null
 )
 
 class DriversViewModel(
@@ -36,7 +38,7 @@ class DriversViewModel(
 
     private fun loadDrivers(teamId: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 // Requer um metodo no TeamRepository para buscar um único time pelo ID
                 val currentTeam = teamRepository.getTeamById(teamId)
@@ -48,8 +50,13 @@ class DriversViewModel(
                     it.copy(team = currentTeam, drivers = sortedDrivers, isLoading = false)
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
+                _uiState.update { it.copy(error = e.toNetworkError(), isLoading = false) }
             }
         }
+    }
+
+    fun retry() {
+        val teamId = _uiState.value.team?.id ?: return
+        loadDrivers(teamId)
     }
 }

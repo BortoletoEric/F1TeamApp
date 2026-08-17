@@ -28,6 +28,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
+import io.github.bortoletoeric.f1teamapp.ui.components.ErrorState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -49,7 +51,8 @@ fun TeamsRoute(
     TeamsScreen(
         uiState = uiState,
         onTeamClick = onNavigateToTeamDetails,
-        onToggleFavorite = viewModel::toggleFavorite
+        onToggleFavorite = viewModel::toggleFavorite,
+        onRetry = viewModel::refresh
     )
 }
 
@@ -57,10 +60,25 @@ fun TeamsRoute(
 fun TeamsScreen(
     uiState: TeamsUiState,
     onTeamClick: (String) -> Unit,
-    onToggleFavorite: (String, Boolean) -> Unit
+    onToggleFavorite: (String, Boolean) -> Unit,
+    onRetry: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Efeito para mostrar erro via Snackbar quando já temos dados em cache
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null && uiState.teams.isNotEmpty()) {
+            snackbarHostState.showSnackbar(
+                message = uiState.error.toMessage(),
+                actionLabel = "Tentar novamente"
+            ).also { result ->
+                if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                    onRetry()
+                }
+            }
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -72,21 +90,12 @@ fun TeamsScreen(
         ) {
             if (uiState.isLoading && uiState.teams.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (uiState.errorMessage != null && uiState.teams.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = uiState.errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else if (uiState.teams.isEmpty()) {
+            } else if (uiState.error != null && uiState.teams.isEmpty()) {
+                ErrorState(
+                    error = uiState.error,
+                    onRetry = onRetry
+                )
+            } else if (uiState.teams.isEmpty() && !uiState.isLoading) {
                 Text(
                     text = "Nenhum time encontrado.",
                     modifier = Modifier.align(Alignment.Center),
@@ -193,7 +202,8 @@ fun TeamsScreenSuccessPreview() {
                 )
             ),
             onTeamClick = {},
-            onToggleFavorite = { _, _ -> }
+            onToggleFavorite = { _, _ -> },
+            onRetry = {}
         )
     }
 }

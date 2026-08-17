@@ -8,6 +8,9 @@ interface TeamRepository {
     // SSOT: Consome dados exclusivamente do Room (já ordenados)
     fun getTeams(): Flow<List<Team>>
 
+    // Busca na API os times do campeonato (/current/constructors-championship)
+    suspend fun getTeamById(teamId: String): Team
+
     // Atualiza o banco com dados da API (/current/constructors-championship) mantendo favoritos
     suspend fun syncTeams()
 

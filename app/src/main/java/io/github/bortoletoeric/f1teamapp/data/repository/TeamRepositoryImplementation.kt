@@ -1,7 +1,7 @@
 package io.github.bortoletoeric.f1teamapp.data.repository
 
 import io.github.bortoletoeric.f1teamapp.data.local.dao.TeamDao
-import io.github.bortoletoeric.f1teamapp.data.mapper.toDomain
+import io.github.bortoletoeric.f1teamapp.data.local.entity.TeamEntity
 import io.github.bortoletoeric.f1teamapp.data.mapper.toEntity
 import io.github.bortoletoeric.f1teamapp.data.remote.F1ApiService
 import io.github.bortoletoeric.f1teamapp.domain.model.Team
@@ -12,48 +12,64 @@ import kotlinx.coroutines.flow.map
 
 class TeamRepositoryImpl(
     private val apiService: F1ApiService,
-    private val teamDao: TeamDao
+    private val dao: TeamDao
 ) : TeamRepository {
 
-    override fun observeTeams(): Flow<List<Team>> {
-        return teamDao.observeTeams().map { entities ->
-            entities.map { it.toDomain() }
-        }
-    }
-
-    override fun observeTeam(teamId: String): Flow<Team> {
-        return teamDao.observeTeam(teamId).map { it.toDomain() }
-    }
-
-    override fun observeDriversByTeam(teamId: String): Flow<List<Driver>> {
-        return teamDao.observeDriversByTeam(teamId).map { entities ->
-            entities.map { it.toDomain() }
-        }
-    }
-
-    override suspend fun syncData() {
-        try {
-            val teamResponse = apiService.getTeams()
-            val remoteTeams = teamResponse.teams
-
-            val teamEntities = remoteTeams.map { it.toEntity() }
-            teamDao.upsertTeamsPreservingFavorites(teamEntities)
-
-            val driverEntities = remoteTeams.flatMap { team ->
-                val driversResponse = apiService.getDriversByTeam(team.teamId)
-                driversResponse.drivers.map { driver ->
-                    driver.toEntity(teamId = team.teamId)
-                }
+    override fun getTeams(): Flow<List<Team>> {
+        return dao.getTeams().map { entities ->
+            entities.map { entity ->
+                Team(
+                    id = entity.id,
+                    name = entity.name,
+                    position = entity.position,
+                    points = entity.points,
+                    wins = entity.wins,
+                    isFavorite = entity.isFavorite
+                )
             }
-
-            teamDao.insertDrivers(driverEntities)
-
-        } catch (e: Exception) {
-            throw e
         }
+    }
+
+    override suspend fun syncTeams() {
+        val response = apiService.getConstructorsStandings()
+
+        // Acessa a lista correta (constructorsChampionship) definida no DTO
+        val entities = response.constructorsChampionship.map { standing ->
+            TeamEntity(
+                id = standing.team.teamId,
+                name = standing.team.teamName,
+                position = standing.position,
+                points = standing.points.toFloat(), // Converte Int (DTO) para Float (Entity)
+                wins = standing.wins,
+                isFavorite = false
+            )
+        }
+
+        dao.upsertTeamsPreservingFavorites(entities)
     }
 
     override suspend fun toggleFavorite(teamId: String, isFavorite: Boolean) {
-        teamDao.updateFavoriteStatus(teamId, isFavorite)
+        dao.updateFavoriteStatus(teamId, isFavorite)
     }
+
+    override suspend fun getTeamDrivers(teamId: String): List<Driver> {
+        val response = apiService.getTeamDrivers(teamId)
+        return response.drivers.map { dto ->
+            Driver(
+                id = dto.driverId,
+                teamId = teamId,
+                name = "${dto.name} ${dto.surname}",
+                photoUrl = null,
+                points = dto.points
+            )
+        }
+    }
+
+//    data class Driver(
+//        val id: String,
+//        val teamId: String,
+//        val name: String,
+//        val photoUrl: String?,
+//        val points: Int
+//    )
 }

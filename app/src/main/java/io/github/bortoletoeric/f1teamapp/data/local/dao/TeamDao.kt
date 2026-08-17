@@ -11,32 +11,25 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TeamDao {
-    @Query("SELECT * FROM teams ORDER BY name ASC")
-    fun observeTeams(): Flow<List<TeamEntity>>
-
-    @Query("SELECT * FROM teams WHERE id = :teamId")
-    fun observeTeam(teamId: String): Flow<TeamEntity>
-
-    @Query("SELECT * FROM drivers WHERE teamId = :teamId ORDER BY name ASC")
-    fun observeDriversByTeam(teamId: String): Flow<List<DriverEntity>>
+    // Garante a ordenação nativa (posição) conforme regra de negócio
+    @Query("SELECT * FROM teams ORDER BY position ASC")
+    fun getTeams(): Flow<List<TeamEntity>>
 
     @Query("SELECT isFavorite FROM teams WHERE id = :teamId")
-    suspend fun getFavoriteStatus(teamId: String): Boolean?
-
-    @Query("UPDATE teams SET isFavorite = :isFavorite WHERE id = :teamId")
-    suspend fun updateFavoriteStatus(teamId: String, isFavorite: Boolean)
+    suspend fun isFavorite(teamId: String): Boolean?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTeam(team: TeamEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDrivers(drivers: List<DriverEntity>)
-
+    // Lógica de Upsert que preserva o status de favorito local
     @Transaction
     suspend fun upsertTeamsPreservingFavorites(teams: List<TeamEntity>) {
-        teams.forEach { remoteTeam ->
-            val isFavorite = getFavoriteStatus(remoteTeam.id) ?: false
-            insertTeam(remoteTeam.copy(isFavorite = isFavorite))
+        teams.forEach { newTeam ->
+            val currentFavoriteStatus = isFavorite(newTeam.id) ?: false
+            insertTeam(newTeam.copy(isFavorite = currentFavoriteStatus))
         }
     }
+
+    @Query("UPDATE teams SET isFavorite = :isFavorite WHERE id = :teamId")
+    suspend fun updateFavoriteStatus(teamId: String, isFavorite: Boolean)
 }

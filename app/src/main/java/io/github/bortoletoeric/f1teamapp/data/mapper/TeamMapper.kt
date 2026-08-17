@@ -14,7 +14,7 @@ fun TeamEntity.toDomain() = Team(
 )
 
 fun ConstructorStandingDto.toEntity() = TeamEntity(
-    id = team.teamId,
+    id = teamId,
     name = team.teamName,
     position = position,
     points = points.toFloat(),

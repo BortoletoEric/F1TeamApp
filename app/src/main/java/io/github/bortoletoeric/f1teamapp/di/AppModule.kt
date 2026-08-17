@@ -9,6 +9,8 @@ import io.github.bortoletoeric.f1teamapp.ui.drivers.DriversViewModel
 import io.github.bortoletoeric.f1teamapp.ui.teams.TeamsViewModel
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -26,9 +28,17 @@ val appModule = module {
 
     // 2. Instância do Retrofit & API Service
     single {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+
         val json = Json { ignoreUnknownKeys = true }
         Retrofit.Builder()
-            .baseUrl("https://f1api.dev/pt/")
+            .baseUrl("https://f1api.dev/api/")
+            .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(F1ApiService::class.java)

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ConstructorStandingDto(
+    @SerialName("teamId") val teamId: String,
     @SerialName("position") val position: Int,
     @SerialName("points") val points: Int,
     @SerialName("wins") val wins: Int,

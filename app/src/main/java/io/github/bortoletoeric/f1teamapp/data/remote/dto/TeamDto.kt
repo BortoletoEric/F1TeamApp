@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TeamDto(
-    @SerialName("teamId") val teamId: String,
     @SerialName("teamName") val teamName: String,
-    @SerialName("base") val base: String
+    @SerialName("country") val country: String
 )

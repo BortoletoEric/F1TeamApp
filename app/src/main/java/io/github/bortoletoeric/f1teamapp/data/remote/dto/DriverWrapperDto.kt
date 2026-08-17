@@ -4,7 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DriversResponseDto(
-    @SerialName("drivers")
-    val drivers: List<DriverWrapperDto>,
+data class DriverWrapperDto(
+    @SerialName("driver") val driver: DriverDto
 )

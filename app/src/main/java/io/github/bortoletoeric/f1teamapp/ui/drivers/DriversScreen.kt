@@ -57,6 +57,19 @@ fun DriversScreen(
         return
     }
 
+    if (uiState.errorMessage != null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = onNavigateBack) {
+                    Text("Voltar")
+                }
+            }
+        }
+        return
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         uiState.team?.let { team ->
             TeamHeader(
@@ -65,13 +78,19 @@ fun DriversScreen(
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(uiState.drivers, key = { it.id }) { driver ->
-                DriverItem(driver = driver)
+        if (uiState.drivers.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Nenhum piloto encontrado para esta equipe.")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(uiState.drivers, key = { it.id }) { driver ->
+                    DriverItem(driver = driver)
+                }
             }
         }
     }

@@ -49,5 +49,5 @@ val appModule = module {
 
     // 4. Instâncias das ViewModels
     viewModel { TeamsViewModel(teamRepository = get()) }
-    viewModel { DriversViewModel(teamRepository = get()) }
+    viewModel { DriversViewModel(teamRepository = get(), savedStateHandle = get()) }
 }

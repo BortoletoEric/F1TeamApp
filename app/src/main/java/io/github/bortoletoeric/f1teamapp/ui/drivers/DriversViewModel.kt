@@ -20,12 +20,21 @@ data class DriversUiState(
     val errorMessage: String? = null
 )
 
-class DriversViewModel(private val teamRepository: TeamRepository) : ViewModel() {
+class DriversViewModel(
+    private val teamRepository: TeamRepository,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DriversUiState())
     val uiState: StateFlow<DriversUiState> = _uiState.asStateFlow()
 
-    fun loadDrivers(teamId: String) {
+    init {
+        savedStateHandle.get<String>("teamId")?.let { teamId ->
+            loadDrivers(teamId)
+        }
+    }
+
+    private fun loadDrivers(teamId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {

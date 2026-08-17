@@ -25,6 +25,7 @@ val appModule = module {
             .build()
     }
     single { get<AppDatabase>().teamDao() }
+    single { get<AppDatabase>().driverDao() }
 
     // 2. Instância do Retrofit & API Service
     single {
@@ -44,8 +45,14 @@ val appModule = module {
             .create(F1ApiService::class.java)
     }
 
-    // 3. Instância do Repositório (Injeta API e DAO automaticamente)
-    single<TeamRepository> { TeamRepositoryImpl(apiService = get(), dao = get()) }
+    // 3. Instância do Repositório (Injeta API e DAOs automaticamente)
+    single<TeamRepository> {
+        TeamRepositoryImpl(
+            apiService = get(),
+            teamDao = get(),
+            driverDao = get()
+        )
+    }
 
     // 4. Instâncias das ViewModels
     viewModel { TeamsViewModel(teamRepository = get()) }

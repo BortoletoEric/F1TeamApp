@@ -20,6 +20,14 @@ fun DriverDto.toDomain(teamId: String) = Driver(
     points = points.toFloat()
 )
 
+fun Driver.toEntity() = DriverEntity(
+    id = id,
+    teamId = teamId,
+    name = name,
+    photoUrl = photoUrl,
+    points = points
+)
+
 fun DriverDto.toEntity(teamId: String) = DriverEntity(
     id = driverId,
     teamId = teamId,

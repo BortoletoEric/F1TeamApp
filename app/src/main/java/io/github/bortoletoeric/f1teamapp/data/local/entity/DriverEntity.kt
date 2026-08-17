@@ -19,5 +19,6 @@ data class DriverEntity(
     @PrimaryKey val id: String,
     val teamId: String,
     val name: String,
-    val photoUrl: String?
+    val photoUrl: String?,
+    val points: Float
 )

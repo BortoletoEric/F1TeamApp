@@ -5,5 +5,5 @@ data class Driver(
     val teamId: String,
     val name: String,
     val photoUrl: String?,
-    val points: Int
+    val points: Float
 )

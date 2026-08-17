@@ -15,6 +15,9 @@ interface TeamDao {
     @Query("SELECT * FROM teams ORDER BY position ASC")
     fun getTeams(): Flow<List<TeamEntity>>
 
+    @Query("SELECT * FROM teams WHERE id = :teamId LIMIT 1")
+    suspend fun getTeamById(teamId: String): TeamEntity
+
     @Query("SELECT isFavorite FROM teams WHERE id = :teamId")
     suspend fun isFavorite(teamId: String): Boolean?
 
